@@ -295,6 +295,134 @@ app.get("/api/spots", authMiddleware, (req, res) => {
   }
 });
 
+app.post("/api/spots", authMiddleware, adminMiddleware, (req, res) => {
+  const {
+    nameEn,
+    nameTc,
+    descriptionEn,
+    descriptionTc,
+    attractionId,
+    beaconUuid,
+    beaconMajor,
+    beaconMinor,
+    audioEn,
+    audioTc,
+    images,
+  } = req.body;
+
+  if (
+    !nameEn ||
+    !nameTc ||
+    !descriptionEn ||
+    !descriptionTc ||
+    !attractionId ||
+    !beaconUuid ||
+    beaconMajor == null ||
+    beaconMinor == null ||
+    !audioEn ||
+    !audioTc
+  ) {
+    return res
+      .status(400)
+      .json({ error: "All fields are required except images" });
+  }
+
+  try {
+    const result = AttractionDB.createSpot({
+      nameEn,
+      nameTc,
+      descriptionEn,
+      descriptionTc,
+      attractionId,
+      beaconUuid,
+      beaconMajor,
+      beaconMinor,
+      audioEn,
+      audioTc,
+    });
+    if (result.changes === 0) {
+      return res.status(409).json({ error: "Spot already exists" });
+    }
+    const spotId = result.lastInsertRowid;
+    if (images && Array.isArray(images) && images.length > 0) {
+      images.forEach((imageUrl) => {
+        AttractionDB.createSpotImage(spotId, imageUrl);
+      });
+    }
+    res.status(201).json({ message: "Spot created successfully" });
+  } catch (error) {
+    console.error("Error creating spot:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to create spot", details: error.message });
+  }
+});
+
+app.patch("/api/spots/:id", authMiddleware, adminMiddleware, (req, res) => {
+  const { id } = req.params;
+  const {
+    nameEn,
+    nameTc,
+    descriptionEn,
+    descriptionTc,
+    attractionId,
+    beaconUuid,
+    beaconMajor,
+    beaconMinor,
+    audioEn,
+    audioTc,
+    images,
+  } = req.body;
+
+  if (
+    !nameEn ||
+    !nameTc ||
+    !descriptionEn ||
+    !descriptionTc ||
+    !attractionId ||
+    !beaconUuid ||
+    beaconMajor == null ||
+    beaconMinor == null ||
+    !audioEn ||
+    !audioTc
+  ) {
+    return res
+      .status(400)
+      .json({ error: "All fields are required except images" });
+  }
+
+  try {
+    const result = AttractionDB.updateSpot(id, {
+      nameEn,
+      nameTc,
+      descriptionEn,
+      descriptionTc,
+      attractionId,
+      beaconUuid,
+      beaconMajor,
+      beaconMinor,
+      audioEn,
+      audioTc,
+    });
+    if (result.changes === 0) {
+      return res.status(404).json({ error: "Spot not found" });
+    }
+    // Clear existing images and insert new ones
+    AttractionDB.clearSpotImages(id);
+    if (images && Array.isArray(images) && images.length > 0) {
+      images.forEach((imageUrl) => {
+        AttractionDB.createSpotImage(id, imageUrl);
+      });
+    }
+    res.json({ message: "Spot updated successfully" });
+  } catch (error) {
+    console.error("Error updating spot:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to update spot", details: error.message });
+  }
+});
+
 const privateKey = fs.readFileSync("key.pem", "utf8");
 const certificate = fs.readFileSync("cert.pem", "utf8");
 const credentials = { key: privateKey, cert: certificate };

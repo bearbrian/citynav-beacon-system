@@ -82,9 +82,26 @@ const SQL_CMD = {
         INSERT OR IGNORE INTO spots (nameEn, nameTc, descriptionEn, descriptionTc, audioEn, audioTc, attractionId, beaconUuid, beaconMajor, beaconMinor) 
         VALUES (@nameEn, @nameTc, @descriptionEn, @descriptionTc, @audioEn, @audioTc, @attractionId, @beaconUuid, @beaconMajor, @beaconMinor)
     `,
+  updateSpot: `
+        UPDATE spots 
+        SET nameEn = @nameEn, 
+            nameTc = @nameTc, 
+            descriptionEn = @descriptionEn, 
+            descriptionTc = @descriptionTc, 
+            audioEn = @audioEn, 
+            audioTc = @audioTc, 
+            attractionId = @attractionId, 
+            beaconUuid = @beaconUuid, 
+            beaconMajor = @beaconMajor, 
+            beaconMinor = @beaconMinor 
+        WHERE id = @id
+    `,
   createSpotImage: `
         INSERT OR IGNORE INTO spot_images (spotId, imageUrl) 
         VALUES (@spotId, @imageUrl)
+    `,
+  clearSpotImages: `
+        DELETE FROM spot_images WHERE spotId = @spotId
     `,
   createBeacon: `
         INSERT OR IGNORE INTO beacons (uuid, description) 
@@ -267,8 +284,16 @@ class AttractionDB {
     return this.db.prepare(SQL_CMD.createSpot).run(data);
   }
 
+  updateSpot(id, data) {
+    return this.db.prepare(SQL_CMD.updateSpot).run({ id, ...data });
+  }
+
   createSpotImage(spotId, imageUrl) {
     return this.db.prepare(SQL_CMD.createSpotImage).run({ spotId, imageUrl });
+  }
+
+  clearSpotImages(spotId) {
+    return this.db.prepare(SQL_CMD.clearSpotImages).run({ spotId });
   }
 
   createBeacon(data) {
