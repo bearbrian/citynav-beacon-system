@@ -31,8 +31,8 @@ module.exports = {
     ],
     beacons: [
       {
-        uuid: "123e4567-e89b-12d3-a456-426614174000",
-        description: "Beacon at Peak Tower entrance",
+        uuid: "e2c56db5-dffb-48d2-b060-d0f5a71096e0",
+        description: "Beacon for demonstration",
       },
       {
         uuid: "223e4567-e89b-12d3-a456-426614174001",
