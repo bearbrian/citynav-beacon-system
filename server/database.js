@@ -67,6 +67,17 @@ const SQL_CMD = {
         INSERT OR IGNORE INTO attractions (nameEn, nameTc, descriptionEn, descriptionTc, audioEn, audioTc, imageUrl) 
         VALUES (@nameEn, @nameTc, @descriptionEn, @descriptionTc, @audioEn, @audioTc, @imageUrl)
     `,
+  updateAttraction: `
+        UPDATE attractions 
+        SET nameEn = @nameEn, 
+            nameTc = @nameTc, 
+            descriptionEn = @descriptionEn, 
+            descriptionTc = @descriptionTc, 
+            audioEn = @audioEn, 
+            audioTc = @audioTc, 
+            imageUrl = @imageUrl 
+        WHERE id = @id
+    `,
   createSpot: `
         INSERT OR IGNORE INTO spots (nameEn, nameTc, descriptionEn, descriptionTc, audioEn, audioTc, attractionId, beaconUuid, beaconMajor, beaconMinor) 
         VALUES (@nameEn, @nameTc, @descriptionEn, @descriptionTc, @audioEn, @audioTc, @attractionId, @beaconUuid, @beaconMajor, @beaconMinor)
@@ -246,6 +257,10 @@ class AttractionDB {
 
   createAttraction(data) {
     return this.db.prepare(SQL_CMD.createAttraction).run(data);
+  }
+
+  updateAttraction(id, data) {
+    return this.db.prepare(SQL_CMD.updateAttraction).run({ id, ...data });
   }
 
   createSpot(data) {

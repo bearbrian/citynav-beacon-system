@@ -168,6 +168,102 @@ app.get("/api/attractions", authMiddleware, (req, res) => {
   }
 });
 
+app.post("/api/attractions", authMiddleware, adminMiddleware, (req, res) => {
+  const {
+    nameEn,
+    nameTc,
+    descriptionEn,
+    descriptionTc,
+    audioEn,
+    audioTc,
+    imageUrl,
+  } = req.body;
+
+  if (
+    !nameEn ||
+    !nameTc ||
+    !descriptionEn ||
+    !descriptionTc ||
+    !audioEn ||
+    !audioTc ||
+    !imageUrl
+  ) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
+  try {
+    const result = AttractionDB.createAttraction({
+      nameEn,
+      nameTc,
+      descriptionEn,
+      descriptionTc,
+      audioEn,
+      audioTc,
+      imageUrl,
+    });
+    if (result.changes === 0) {
+      return res.status(409).json({ error: "Attraction already exists" });
+    }
+    res.status(201).json({ message: "Attraction created successfully" });
+  } catch (error) {
+    console.error("Error creating attraction:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to create attraction", details: error.message });
+  }
+});
+
+app.patch(
+  "/api/attractions/:id",
+  authMiddleware,
+  adminMiddleware,
+  (req, res) => {
+    const { id } = req.params;
+    const {
+      nameEn,
+      nameTc,
+      descriptionEn,
+      descriptionTc,
+      audioEn,
+      audioTc,
+      imageUrl,
+    } = req.body;
+
+    if (
+      !nameEn ||
+      !nameTc ||
+      !descriptionEn ||
+      !descriptionTc ||
+      !audioEn ||
+      !audioTc ||
+      !imageUrl
+    ) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    try {
+      const result = AttractionDB.updateAttraction(id, {
+        nameEn,
+        nameTc,
+        descriptionEn,
+        descriptionTc,
+        audioEn,
+        audioTc,
+        imageUrl,
+      });
+      if (result.changes === 0) {
+        return res.status(404).json({ error: "Attraction not found" });
+      }
+      res.json({ message: "Attraction updated successfully" });
+    } catch (error) {
+      console.error("Error updating attraction:", error);
+      res
+        .status(500)
+        .json({ error: "Failed to update attraction", details: error.message });
+    }
+  }
+);
+
 app.get("/api/spots", authMiddleware, (req, res) => {
   try {
     const { attractionId } = req.query;
