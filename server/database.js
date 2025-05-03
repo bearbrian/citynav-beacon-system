@@ -107,6 +107,11 @@ const SQL_CMD = {
         INSERT OR IGNORE INTO beacons (uuid, description) 
         VALUES (@uuid, @description)
     `,
+  updateBeacon: `
+        UPDATE beacons 
+        SET description = @description 
+        WHERE uuid = @uuid
+    `,
   getUser: `
         SELECT * FROM users WHERE username = @username
     `,
@@ -298,6 +303,10 @@ class AttractionDB {
 
   createBeacon(data) {
     return this.db.prepare(SQL_CMD.createBeacon).run(data);
+  }
+
+  updateBeacon(uuid, data) {
+    return this.db.prepare(SQL_CMD.updateBeacon).run({ uuid, ...data });
   }
 }
 

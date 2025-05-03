@@ -137,7 +137,7 @@ app.get("/api/users", authMiddleware, (req, res) => {
   }
 });
 
-app.get("/api/beacons", authMiddleware, (req, res) => {
+app.get("/api/beacons", (req, res) => {
   try {
     const { uuid } = req.query;
     const beacons = AttractionDB.getBeacons(uuid || null);
@@ -153,7 +153,64 @@ app.get("/api/beacons", authMiddleware, (req, res) => {
   }
 });
 
-app.get("/api/attractions", authMiddleware, (req, res) => {
+app.post("/api/beacons", authMiddleware, adminMiddleware, (req, res) => {
+  const { uuid, description } = req.body;
+
+  if (!uuid || !description) {
+    return res.status(400).json({ error: "UUID and description are required" });
+  }
+
+  // Validate UUID format
+  const uuidPattern =
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+  if (!uuidPattern.test(uuid)) {
+    return res.status(400).json({ error: "Invalid UUID format" });
+  }
+
+  try {
+    const result = AttractionDB.createBeacon({ uuid, description });
+    if (result.changes === 0) {
+      return res.status(409).json({ error: "Beacon UUID already exists" });
+    }
+    res.status(201).json({ message: "Beacon created successfully" });
+  } catch (error) {
+    console.error("Error creating beacon:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to create beacon", details: error.message });
+  }
+});
+
+app.patch("/api/beacons/:uuid", authMiddleware, adminMiddleware, (req, res) => {
+  const { uuid } = req.params;
+  const { description } = req.body;
+
+  if (!description) {
+    return res.status(400).json({ error: "Description is required" });
+  }
+
+  // Validate UUID format
+  const uuidPattern =
+    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
+  if (!uuidPattern.test(uuid)) {
+    return res.status(400).json({ error: "Invalid UUID format" });
+  }
+
+  try {
+    const result = AttractionDB.updateBeacon(uuid, { description });
+    if (result.changes === 0) {
+      return res.status(404).json({ error: "Beacon not found" });
+    }
+    res.json({ message: "Beacon updated successfully" });
+  } catch (error) {
+    console.error("Error updating beacon:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to update beacon", details: error.message });
+  }
+});
+
+app.get("/api/attractions", (req, res) => {
   try {
     const attractions = AttractionDB.getAttractions();
     if (!attractions || attractions.length === 0) {
@@ -264,7 +321,7 @@ app.patch(
   }
 );
 
-app.get("/api/spots", authMiddleware, (req, res) => {
+app.get("/api/spots", (req, res) => {
   try {
     const { attractionId } = req.query;
     let parsedAttractionId = null;

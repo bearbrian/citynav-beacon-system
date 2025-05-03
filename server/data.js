@@ -38,6 +38,10 @@ module.exports = {
         uuid: "223e4567-e89b-12d3-a456-426614174001",
         description: "Beacon near Tian Tan Buddha statue",
       },
+      {
+        uuid: "123e4567-e89b-12d3-a456-426614174000",
+        description: "Beacon near Peak Tower",
+      },
     ],
     spots: [
       {
