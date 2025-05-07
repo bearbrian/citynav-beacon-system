@@ -145,7 +145,7 @@ const beaconForm = ref(null);
 const fetchBeacons = async () => {
   loading.value = true;
   try {
-    const response = await axios.get("https://localhost:3000/api/beacons", {
+    const response = await axios.get("https://50.16.81.205:3000/api/beacons", {
       headers: { Authorization: localStorage.getItem("token") },
     });
     beacons.value = response.data.map((beacon) => ({
@@ -203,7 +203,7 @@ const submitForm = () => {
       try {
         if (isEditing.value) {
           await axios.patch(
-            `https://localhost:3000/api/beacons/${form.value.uuid}`,
+            `https://50.16.81.205:3000/api/beacons/${form.value.uuid}`,
             { description: form.value.description },
             {
               headers: { Authorization: localStorage.getItem("token") },
@@ -211,9 +211,13 @@ const submitForm = () => {
           );
           ElMessage.success("Beacon updated successfully");
         } else {
-          await axios.post("https://localhost:3000/api/beacons", form.value, {
-            headers: { Authorization: localStorage.getItem("token") },
-          });
+          await axios.post(
+            "https://50.16.81.205:3000/api/beacons",
+            form.value,
+            {
+              headers: { Authorization: localStorage.getItem("token") },
+            }
+          );
           ElMessage.success("Beacon created successfully");
         }
         dialogVisible.value = false;

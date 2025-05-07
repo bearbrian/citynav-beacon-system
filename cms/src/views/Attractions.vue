@@ -44,6 +44,12 @@
           align="center"
         />
         <el-table-column
+          prop="nameJp"
+          label="Name (Japanese)"
+          min-width="150"
+          align="center"
+        />
+        <el-table-column
           prop="descriptionEn"
           label="Description (English)"
           min-width="200"
@@ -52,6 +58,12 @@
         <el-table-column
           prop="descriptionTc"
           label="Description (Traditional Chinese)"
+          min-width="200"
+          align="center"
+        />
+        <el-table-column
+          prop="descriptionJp"
+          label="Description (Japanese)"
           min-width="200"
           align="center"
         />
@@ -80,6 +92,17 @@
         >
           <template #default="scope">
             <audio controls :src="scope.row.audioTc" style="width: 180px">
+              Your browser does not support the audio element.
+            </audio>
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="Audio (Japanese)"
+          min-width="200"
+          align="center"
+        >
+          <template #default="scope">
+            <audio controls :src="scope.row.audioJp" style="width: 180px">
               Your browser does not support the audio element.
             </audio>
           </template>
@@ -117,11 +140,17 @@
           <el-form-item label="Name (TC)" prop="nameTc">
             <el-input v-model="form.nameTc" />
           </el-form-item>
+          <el-form-item label="Name (JP)" prop="nameJp">
+            <el-input v-model="form.nameJp" />
+          </el-form-item>
           <el-form-item label="Description (EN)" prop="descriptionEn">
             <el-input v-model="form.descriptionEn" type="textarea" :rows="3" />
           </el-form-item>
           <el-form-item label="Description (TC)" prop="descriptionTc">
             <el-input v-model="form.descriptionTc" type="textarea" :rows="3" />
+          </el-form-item>
+          <el-form-item label="Description (JP)" prop="descriptionJp">
+            <el-input v-model="form.descriptionJp" type="textarea" :rows="3" />
           </el-form-item>
           <el-form-item label="Image URL" prop="imageUrl">
             <el-input v-model="form.imageUrl" />
@@ -131,6 +160,9 @@
           </el-form-item>
           <el-form-item label="Audio (TC)" prop="audioTc">
             <el-input v-model="form.audioTc" />
+          </el-form-item>
+          <el-form-item label="Audio (JP)" prop="audioJp">
+            <el-input v-model="form.audioJp" />
           </el-form-item>
         </el-form>
         <template #footer>
@@ -167,11 +199,14 @@ const form = ref({
   id: null,
   nameEn: "",
   nameTc: "",
+  nameJp: "",
   descriptionEn: "",
   descriptionTc: "",
+  descriptionJp: "",
   imageUrl: "",
   audioEn: "",
   audioTc: "",
+  audioJp: "",
 });
 
 const rules = ref({
@@ -183,6 +218,14 @@ const rules = ref({
     {
       required: true,
       message: "Please enter Traditional Chinese name",
+      trigger: "blur",
+    },
+    { min: 2, message: "Name must be at least 2 characters", trigger: "blur" },
+  ],
+  nameJp: [
+    {
+      required: true,
+      message: "Please enter Japanese name",
       trigger: "blur",
     },
     { min: 2, message: "Name must be at least 2 characters", trigger: "blur" },
@@ -203,6 +246,18 @@ const rules = ref({
     {
       required: true,
       message: "Please enter Traditional Chinese description",
+      trigger: "blur",
+    },
+    {
+      min: 10,
+      message: "Description must be at least 10 characters",
+      trigger: "blur",
+    },
+  ],
+  descriptionJp: [
+    {
+      required: true,
+      message: "Please enter Japanese description",
       trigger: "blur",
     },
     {
@@ -243,6 +298,18 @@ const rules = ref({
       trigger: ["blur", "change"],
     },
   ],
+  audioJp: [
+    {
+      required: true,
+      message: "Please enter Japanese audio URL",
+      trigger: "blur",
+    },
+    {
+      type: "url",
+      message: "Please enter a valid URL",
+      trigger: ["blur", "change"],
+    },
+  ],
 });
 
 const attractionForm = ref(null);
@@ -250,18 +317,24 @@ const attractionForm = ref(null);
 const fetchAttractions = async () => {
   loading.value = true;
   try {
-    const response = await axios.get("https://localhost:3000/api/attractions", {
-      headers: { Authorization: localStorage.getItem("token") },
-    });
+    const response = await axios.get(
+      "https://50.16.81.205:3000/api/attractions",
+      {
+        headers: { Authorization: localStorage.getItem("token") },
+      }
+    );
     attractions.value = response.data.map((attraction) => ({
       id: attraction.id,
       nameEn: attraction.nameEn || "-",
       nameTc: attraction.nameTc || "-",
+      nameJp: attraction.nameJp || "-",
       descriptionEn: attraction.descriptionEn || "-",
       descriptionTc: attraction.descriptionTc || "-",
-      imageUrl: attraction.imageUrl,
-      audioEn: attraction.audioEn,
-      audioTc: attraction.audioTc,
+      descriptionJp: attraction.descriptionJp || "-",
+      imageUrl: attraction.imageUrl || "-",
+      audioEn: attraction.audioEn || "",
+      audioTc: attraction.audioTc || "",
+      audioJp: attraction.audioJp || "",
     }));
   } catch (error) {
     ElMessage.error("API error: GET attractions");
@@ -281,11 +354,14 @@ const openCreateDialog = () => {
     id: null,
     nameEn: "",
     nameTc: "",
+    nameJp: "",
     descriptionEn: "",
     descriptionTc: "",
+    descriptionJp: "",
     imageUrl: "",
     audioEn: "",
     audioTc: "",
+    audioJp: "",
   };
   dialogVisible.value = true;
   if (attractionForm.value) {
@@ -296,7 +372,22 @@ const openCreateDialog = () => {
 const openEditDialog = (attraction) => {
   isEditing.value = true;
   dialogTitle.value = "Edit Attraction";
-  form.value = { ...attraction };
+  form.value = {
+    id: attraction.id,
+    nameEn: attraction.nameEn === "-" ? "" : attraction.nameEn,
+    nameTc: attraction.nameTc === "-" ? "" : attraction.nameTc,
+    nameJp: attraction.nameJp === "-" ? "" : attraction.nameJp,
+    descriptionEn:
+      attraction.descriptionEn === "-" ? "" : attraction.descriptionEn,
+    descriptionTc:
+      attraction.descriptionTc === "-" ? "" : attraction.descriptionTc,
+    descriptionJp:
+      attraction.descriptionJp === "-" ? "" : attraction.descriptionJp,
+    imageUrl: attraction.imageUrl === "-" ? "" : attraction.imageUrl,
+    audioEn: attraction.audioEn || "",
+    audioTc: attraction.audioTc || "",
+    audioJp: attraction.audioJp || "",
+  };
   dialogVisible.value = true;
   if (attractionForm.value) {
     attractionForm.value.clearValidate();
@@ -318,7 +409,7 @@ const submitForm = () => {
         const data = { ...form.value };
         if (isEditing.value) {
           await axios.patch(
-            `https://localhost:3000/api/attractions/${form.value.id}`,
+            `https://50.16.81.205:3000/api/attractions/${form.value.id}`,
             data,
             {
               headers: { Authorization: localStorage.getItem("token") },
@@ -326,7 +417,7 @@ const submitForm = () => {
           );
           ElMessage.success("Attraction updated successfully");
         } else {
-          await axios.post("https://localhost:3000/api/attractions", data, {
+          await axios.post("https://50.16.81.205:3000/api/attractions", data, {
             headers: { Authorization: localStorage.getItem("token") },
           });
           ElMessage.success("Attraction created successfully");

@@ -34,7 +34,7 @@ const logout = async () => {
     const token = localStorage.getItem("token");
     if (!token) throw new Error("No token found");
 
-    const response = await fetch("https://localhost:3000/api/logout", {
+    const response = await fetch("https://50.16.81.205:3000/api/logout", {
       method: "POST",
       headers: {
         Authorization: token,

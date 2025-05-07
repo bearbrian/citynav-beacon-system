@@ -95,7 +95,7 @@ const currentUser = ref(user.value || { username: "" });
 const fetchUsers = async () => {
   loading.value = true;
   try {
-    const response = await axios.get("https://localhost:3000/api/users", {
+    const response = await axios.get("https://50.16.81.205:3000/api/users", {
       headers: { Authorization: localStorage.getItem("token") },
     });
     users.value = response.data.map((user) => ({
@@ -141,7 +141,7 @@ const submitUpdate = async () => {
     await Promise.all(
       updates.map((update) =>
         axios.patch(
-          `https://localhost:3000/api/users/${update.username}`,
+          `https://50.16.81.205:3000/api/users/${update.username}`,
           { is_admin: update.isAdmin },
           {
             headers: {

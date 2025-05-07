@@ -41,6 +41,12 @@
           align="center"
         />
         <el-table-column
+          prop="nameJp"
+          label="Name (Japanese)"
+          min-width="150"
+          align="center"
+        />
+        <el-table-column
           prop="descriptionEn"
           label="Description (English)"
           min-width="200"
@@ -49,6 +55,12 @@
         <el-table-column
           prop="descriptionTc"
           label="Description (Traditional Chinese)"
+          min-width="200"
+          align="center"
+        />
+        <el-table-column
+          prop="descriptionJp"
+          label="Description (Japanese)"
           min-width="200"
           align="center"
         />
@@ -114,6 +126,23 @@
             <span v-else>-</span>
           </template>
         </el-table-column>
+        <el-table-column
+          label="Audio (Japanese)"
+          min-width="220"
+          align="center"
+        >
+          <template #default="scope">
+            <audio
+              controls
+              :src="scope.row.audioJp"
+              style="width: 200px"
+              v-if="scope.row.audioJp"
+            >
+              Your browser does not support the audio element.
+            </audio>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
         <el-table-column label="Attraction" min-width="200" align="center">
           <template #default="scope">
             <span v-if="scope.row.attractionId !== '-'">
@@ -173,11 +202,17 @@
           <el-form-item label="Name (TC)" prop="nameTc">
             <el-input v-model="form.nameTc" />
           </el-form-item>
+          <el-form-item label="Name (JP)" prop="nameJp">
+            <el-input v-model="form.nameJp" />
+          </el-form-item>
           <el-form-item label="Description (EN)" prop="descriptionEn">
             <el-input v-model="form.descriptionEn" type="textarea" :rows="3" />
           </el-form-item>
           <el-form-item label="Description (TC)" prop="descriptionTc">
             <el-input v-model="form.descriptionTc" type="textarea" :rows="3" />
+          </el-form-item>
+          <el-form-item label="Description (JP)" prop="descriptionJp">
+            <el-input v-model="form.descriptionJp" type="textarea" :rows="3" />
           </el-form-item>
           <el-form-item label="Gallery">
             <div
@@ -214,6 +249,9 @@
           </el-form-item>
           <el-form-item label="Audio (TC)" prop="audioTc">
             <el-input v-model="form.audioTc" />
+          </el-form-item>
+          <el-form-item label="Audio (JP)" prop="audioJp">
+            <el-input v-model="form.audioJp" />
           </el-form-item>
           <el-form-item label="Attraction" prop="attractionId">
             <el-select
@@ -287,11 +325,14 @@ const form = ref({
   id: null,
   nameEn: "",
   nameTc: "",
+  nameJp: "",
   descriptionEn: "",
   descriptionTc: "",
+  descriptionJp: "",
   images: [],
   audioEn: "",
   audioTc: "",
+  audioJp: "",
   attractionId: null,
   beaconUuid: "",
   beaconMajor: null,
@@ -307,6 +348,14 @@ const rules = ref({
     {
       required: true,
       message: "Please enter Traditional Chinese name",
+      trigger: "blur",
+    },
+    { min: 2, message: "Name must be at least 2 characters", trigger: "blur" },
+  ],
+  nameJp: [
+    {
+      required: true,
+      message: "Please enter Japanese name",
       trigger: "blur",
     },
     { min: 2, message: "Name must be at least 2 characters", trigger: "blur" },
@@ -327,6 +376,18 @@ const rules = ref({
     {
       required: true,
       message: "Please enter Traditional Chinese description",
+      trigger: "blur",
+    },
+    {
+      min: 10,
+      message: "Description must be at least 10 characters",
+      trigger: "blur",
+    },
+  ],
+  descriptionJp: [
+    {
+      required: true,
+      message: "Please enter Japanese description",
       trigger: "blur",
     },
     {
@@ -409,15 +470,30 @@ const rules = ref({
       trigger: ["blur", "change"],
     },
   ],
+  audioJp: [
+    {
+      required: true,
+      message: "Please enter Japanese audio URL",
+      trigger: "blur",
+    },
+    {
+      type: "url",
+      message: "Please enter a valid URL",
+      trigger: ["blur", "change"],
+    },
+  ],
 });
 
 const spotForm = ref(null);
 
 const fetchAttractions = async () => {
   try {
-    const response = await axios.get("https://localhost:3000/api/attractions", {
-      headers: { Authorization: localStorage.getItem("token") },
-    });
+    const response = await axios.get(
+      "https://50.16.81.205:3000/api/attractions",
+      {
+        headers: { Authorization: localStorage.getItem("token") },
+      }
+    );
     attractions.value = response.data;
   } catch (error) {
     ElMessage.error("API error: GET attractions");
@@ -426,7 +502,7 @@ const fetchAttractions = async () => {
 
 const fetchBeacons = async () => {
   try {
-    const response = await axios.get("https://localhost:3000/api/beacons", {
+    const response = await axios.get("https://50.16.81.205:3000/api/beacons", {
       headers: { Authorization: localStorage.getItem("token") },
     });
     beacons.value = response.data;
@@ -453,21 +529,24 @@ const removeImage = (index) => {
 const fetchSpots = async () => {
   loading.value = true;
   try {
-    const response = await axios.get("https://localhost:3000/api/spots", {
+    const response = await axios.get("https://50.16.81.205:3000/api/spots", {
       headers: { Authorization: localStorage.getItem("token") },
     });
     spots.value = response.data.data.map((spot) => ({
       id: spot.id,
       nameEn: spot.nameEn || "-",
       nameTc: spot.nameTc || "-",
+      nameJp: spot.nameJp || "-",
       descriptionEn: spot.descriptionEn || "-",
       descriptionTc: spot.descriptionTc || "-",
+      descriptionJp: spot.descriptionJp || "-",
       attractionId: spot.attractionId || "-",
       beaconUuid: spot.beaconUuid || "-",
       beaconMajor: spot.beaconMajor || "-",
       beaconMinor: spot.beaconMinor || "-",
       audioEn: spot.audioEn || "",
       audioTc: spot.audioTc || "",
+      audioJp: spot.audioJp || "",
       images: spot.images || [],
     }));
   } catch (error) {
@@ -488,11 +567,14 @@ const openCreateDialog = async () => {
     id: null,
     nameEn: "",
     nameTc: "",
+    nameJp: "",
     descriptionEn: "",
     descriptionTc: "",
+    descriptionJp: "",
     images: [],
     audioEn: "",
     audioTc: "",
+    audioJp: "",
     attractionId: null,
     beaconUuid: "",
     beaconMajor: null,
@@ -512,11 +594,14 @@ const openEditDialog = async (spot) => {
     id: spot.id,
     nameEn: spot.nameEn === "-" ? "" : spot.nameEn,
     nameTc: spot.nameTc === "-" ? "" : spot.nameTc,
+    nameJp: spot.nameJp === "-" ? "" : spot.nameJp,
     descriptionEn: spot.descriptionEn === "-" ? "" : spot.descriptionEn,
     descriptionTc: spot.descriptionTc === "-" ? "" : spot.descriptionTc,
+    descriptionJp: spot.descriptionJp === "-" ? "" : spot.descriptionJp,
     images: spot.images ? [...spot.images] : [],
     audioEn: spot.audioEn || "",
     audioTc: spot.audioTc || "",
+    audioJp: spot.audioJp || "",
     attractionId: spot.attractionId === "-" ? null : Number(spot.attractionId),
     beaconUuid: spot.beaconUuid === "-" ? "" : spot.beaconUuid,
     beaconMajor: spot.beaconMajor === "-" ? null : Number(spot.beaconMajor),
@@ -543,11 +628,11 @@ const submitForm = () => {
       try {
         const data = {
           ...form.value,
-          images: form.value.images.filter((url) => url.trim() !== ""), // Remove empty URLs
+          images: form.value.images.filter((url) => url.trim() !== ""),
         };
         if (isEditing.value) {
           await axios.patch(
-            `https://localhost:3000/api/spots/${form.value.id}`,
+            `https://50.16.81.205:3000/api/spots/${form.value.id}`,
             data,
             {
               headers: { Authorization: localStorage.getItem("token") },
@@ -555,14 +640,14 @@ const submitForm = () => {
           );
           ElMessage.success("Spot updated successfully");
         } else {
-          await axios.post("https://localhost:3000/api/spots", data, {
+          await axios.post("https://50.16.81.205:3000/api/spots", data, {
             headers: { Authorization: localStorage.getItem("token") },
           });
           ElMessage.success("Spot created successfully");
         }
         dialogVisible.value = false;
-        tableKey.value += 1; // Force table re-render
-        await fetchSpots(); // Refetch data to ensure gallery updates
+        tableKey.value += 1;
+        await fetchSpots();
       } catch (error) {
         ElMessage.error(
           `API error: ${isEditing.value ? "Update" : "Create"} spot`
@@ -616,18 +701,16 @@ audio {
   margin-top: 10px;
   width: 100px;
 }
-/* Style for carousel pagination dots */
 :deep(.el-carousel__indicator button) {
-  background-color: #dcdcdc; /* Inactive dot color */
+  background-color: #dcdcdc;
 }
 :deep(.el-carousel__indicator.is-active button) {
-  background-color: #409eff; /* Active dot color, matching primary button */
+  background-color: #409eff;
 }
-/* Style for carousel left/right arrows */
 :deep(.el-carousel__arrow) {
-  background-color: #409eff; /* Blue background for arrows */
+  background-color: #409eff;
 }
 :deep(.el-carousel__arrow:hover) {
-  background-color: #66b1ff; /* Lighter blue on hover */
+  background-color: #66b1ff;
 }
 </style>

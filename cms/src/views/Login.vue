@@ -14,7 +14,7 @@ const router = useRouter();
 
 const handleLogin = async (credentials) => {
   try {
-    const response = await fetch("https://localhost:3000/api/login", {
+    const response = await fetch("https://50.16.81.205:3000/api/login", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
