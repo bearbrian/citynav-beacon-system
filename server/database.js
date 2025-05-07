@@ -21,10 +21,13 @@ const SQL_CMD = {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nameEn TEXT NOT NULL,
             nameTc TEXT NOT NULL,
+            nameJp TEXT NOT NULL,
             descriptionEn TEXT NOT NULL,
             descriptionTc TEXT NOT NULL,
+            descriptionJp TEXT NOT NULL,
             audioEn TEXT NOT NULL,
             audioTc TEXT NOT NULL,
+            audioJp TEXT NOT NULL,
             imageUrl TEXT NOT NULL
         )
     `,
@@ -33,10 +36,13 @@ const SQL_CMD = {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nameEn TEXT NOT NULL,
             nameTc TEXT NOT NULL,
+            nameJp TEXT NOT NULL,
             descriptionEn TEXT NOT NULL,
             descriptionTc TEXT NOT NULL,
+            descriptionJp TEXT NOT NULL,
             audioEn TEXT NOT NULL,
             audioTc TEXT NOT NULL,
+            audioJp TEXT NOT NULL,
             attractionId INTEGER,
             beaconUuid TEXT,
             beaconMajor INTEGER,
@@ -64,32 +70,38 @@ const SQL_CMD = {
         VALUES (@username, @password, @is_admin)
     `,
   createAttraction: `
-        INSERT OR IGNORE INTO attractions (nameEn, nameTc, descriptionEn, descriptionTc, audioEn, audioTc, imageUrl) 
-        VALUES (@nameEn, @nameTc, @descriptionEn, @descriptionTc, @audioEn, @audioTc, @imageUrl)
+        INSERT OR IGNORE INTO attractions (nameEn, nameTc, nameJp, descriptionEn, descriptionTc, descriptionJp, audioEn, audioTc, audioJp, imageUrl) 
+        VALUES (@nameEn, @nameTc, @nameJp, @descriptionEn, @descriptionTc, @descriptionJp, @audioEn, @audioTc, @audioJp, @imageUrl)
     `,
   updateAttraction: `
         UPDATE attractions 
         SET nameEn = @nameEn, 
             nameTc = @nameTc, 
+            nameJp = @nameJp,
             descriptionEn = @descriptionEn, 
             descriptionTc = @descriptionTc, 
+            descriptionJp = @descriptionJp,
             audioEn = @audioEn, 
             audioTc = @audioTc, 
+            audioJp = @audioJp,
             imageUrl = @imageUrl 
         WHERE id = @id
     `,
   createSpot: `
-        INSERT OR IGNORE INTO spots (nameEn, nameTc, descriptionEn, descriptionTc, audioEn, audioTc, attractionId, beaconUuid, beaconMajor, beaconMinor) 
-        VALUES (@nameEn, @nameTc, @descriptionEn, @descriptionTc, @audioEn, @audioTc, @attractionId, @beaconUuid, @beaconMajor, @beaconMinor)
+        INSERT OR IGNORE INTO spots (nameEn, nameTc, nameJp, descriptionEn, descriptionTc, descriptionJp, audioEn, audioTc, audioJp, attractionId, beaconUuid, beaconMajor, beaconMinor) 
+        VALUES (@nameEn, @nameTc, @nameJp, @descriptionEn, @descriptionTc, @descriptionJp, @audioEn, @audioTc, @audioJp, @attractionId, @beaconUuid, @beaconMajor, @beaconMinor)
     `,
   updateSpot: `
         UPDATE spots 
         SET nameEn = @nameEn, 
             nameTc = @nameTc, 
+            nameJp = @nameJp,
             descriptionEn = @descriptionEn, 
             descriptionTc = @descriptionTc, 
+            descriptionJp = @descriptionJp,
             audioEn = @audioEn, 
             audioTc = @audioTc, 
+            audioJp = @audioJp,
             attractionId = @attractionId, 
             beaconUuid = @beaconUuid, 
             beaconMajor = @beaconMajor, 
@@ -125,17 +137,20 @@ const SQL_CMD = {
         SELECT uuid, description FROM beacons WHERE (@uuid IS NULL OR uuid = @uuid)
     `,
   getAttractions: `
-        SELECT id, nameEn, nameTc, descriptionEn, descriptionTc, audioEn, audioTc, imageUrl FROM attractions
+        SELECT id, nameEn, nameTc, nameJp, descriptionEn, descriptionTc, descriptionJp, audioEn, audioTc, audioJp, imageUrl FROM attractions
     `,
   getSpots: `
     SELECT 
       s.id, 
       s.nameEn, 
       s.nameTc, 
+      s.nameJp,
       s.descriptionEn, 
       s.descriptionTc, 
+      s.descriptionJp,
       s.audioEn, 
       s.audioTc, 
+      s.audioJp,
       s.attractionId, 
       s.beaconUuid, 
       s.beaconMajor, 
@@ -179,19 +194,25 @@ class AttractionDB {
       ({
         nameEn,
         nameTc,
+        nameJp,
         descriptionEn,
         descriptionTc,
+        descriptionJp,
         audioEn,
         audioTc,
+        audioJp,
         imageUrl,
       }) => {
         this.db.prepare(SQL_CMD.createAttraction).run({
           nameEn,
           nameTc,
+          nameJp,
           descriptionEn,
           descriptionTc,
+          descriptionJp,
           audioEn,
           audioTc,
+          audioJp,
           imageUrl,
         });
       }
@@ -208,10 +229,13 @@ class AttractionDB {
       ({
         nameEn,
         nameTc,
+        nameJp,
         descriptionEn,
         descriptionTc,
+        descriptionJp,
         audioEn,
         audioTc,
+        audioJp,
         attractionId,
         beaconUuid,
         beaconMajor,
@@ -220,10 +244,13 @@ class AttractionDB {
         this.db.prepare(SQL_CMD.createSpot).run({
           nameEn,
           nameTc,
+          nameJp,
           descriptionEn,
           descriptionTc,
+          descriptionJp,
           audioEn,
           audioTc,
+          audioJp,
           attractionId: attractionId || null,
           beaconUuid: beaconUuid || null,
           beaconMajor: beaconMajor || null,
